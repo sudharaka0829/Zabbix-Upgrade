@@ -1,0 +1,9 @@
+vi /etc/snmp/snmptrapd.conf
+
+authCommunity log,execute,net public
+logOption -Lf /var/log/snmptraps.log
+
+sudo touch /var/log/snmptraps.log
+sudo chmod 644 /var/log/snmptraps.log
+sudo chown snmp:snmp /var/log/snmptraps.log
+
