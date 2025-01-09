@@ -1,0 +1,55 @@
+Steps to Create and Enable an SELinux Rule
+
+
+1. Generate Audit Logs for the Blocked Action
+Temporarily clear existing SELinux logs to focus on new issues:
+bash
+Copy code
+sudo ausearch -m AVC,USER_AVC -ts recent > /dev/null
+Trigger the action that's being blocked (e.g., send a test SNMP trap):
+bash
+Copy code
+snmptrap -v 2c -c public 127.0.0.1 '' SNMPv2-MIB::coldStart.0
+
+
+2. Review SELinux Logs
+Check for SELinux denials in the audit logs:
+bash
+Copy code
+sudo ausearch -m AVC,USER_AVC -c 'snmptrapd'
+
+
+3. Generate a Policy Using audit2allow
+Use audit2allow to generate a custom policy based on the denied actions:
+bash
+Copy code
+sudo ausearch -c 'snmptrapd' --raw | audit2allow -M snmptrapd_policy
+This command will create two files:
+snmptrapd_policy.te (the policy source)
+snmptrapd_policy.pp (the compiled policy module)
+
+
+4. Apply the Policy
+Load the policy module into SELinux:
+bash
+Copy code
+sudo semodule -i snmptrapd_policy.pp
+
+
+5. Test the Configuration
+Restart the snmptrapd service:
+bash
+Copy code
+sudo systemctl restart snmptrapd
+Send another test trap and verify that the /tmp/zabbix_traps.tmp file is being updated:
+bash
+Copy code
+snmptrap -v 2c -c public 127.0.0.1 '' SNMPv2-MIB::coldStart.0
+cat /tmp/zabbix_traps.tmp
+
+
+6. Verify the New Policy
+Ensure the policy is correctly loaded:
+bash
+Copy code
+sudo semodule -l | grep snmptrapd_policy
