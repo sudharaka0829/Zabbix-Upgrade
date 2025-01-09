@@ -8,3 +8,7 @@ sudo chmod 644 /var/log/snmptraps.log
 sudo chown snmp:snmp /var/log/snmptraps.log
 
 Jan 09 10:34:04 ASOMUMNAP102 snmptrapd[733932]: /etc/snmp/snmptrapd.conf: line 12: Warning: Unknown token: logOption.
+
+
+if $programname == 'snmptrapd' then /var/log/snmptraps.log
+& stop
